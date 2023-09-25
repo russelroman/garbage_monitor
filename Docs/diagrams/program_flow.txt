@@ -1,0 +1,30 @@
+
+
+if system is not calibrated
+  send message to IOT platform that system is not calibrated
+  if calibration was triggered
+    get the height of the bin
+    save the height of the bin
+    system is calibrated
+
+else if time to send data
+  wakeup mcu and the components
+  get fill level and orientation
+  
+  if GPS Module does not have a clear signal
+    get the base station information
+    get the coordinates from internet using base station information
+  else
+    get the coordinates from GPS Module
+  
+  if fill level is equal to threshhold
+    send sms to a particular mobile number
+    (the cloud application will send email)
+  send data to IOT platform
+  
+else
+  put the mcu and components to sleep
+  
+    
+
+
