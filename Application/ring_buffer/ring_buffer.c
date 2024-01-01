@@ -102,6 +102,18 @@ bool ring_buf_num_contents(ring_buf_t * p_ring_buf)
 	return p_ring_buf->count;
 }
 
+void ring_buf_init_contents(ring_buf_t * p_ring_buf)
+{
+	for(uint32_t i = 0; i < p_ring_buf->count; ++i)
+	{
+		p_ring_buf->buf[i] = 0;
+	}
+
+	p_ring_buf->count = 0;
+	p_ring_buf->head = 0;
+	p_ring_buf->tail = 0;
+}
+
 static void wrap_around_index_check(ring_buf_t * p_ring_buf)
 {
 	if(p_ring_buf->tail > (BUF_SIZE - 1U))

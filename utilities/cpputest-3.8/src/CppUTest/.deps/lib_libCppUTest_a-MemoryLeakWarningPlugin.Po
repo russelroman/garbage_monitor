@@ -1,0 +1,128 @@
+src/CppUTest/lib_libCppUTest_a-MemoryLeakWarningPlugin.o: \
+ src/CppUTest/MemoryLeakWarningPlugin.cpp \
+ include/CppUTest/MemoryLeakDetectorMallocMacros.h \
+ include/CppUTest/CppUTestConfig.h \
+ include/CppUTest/CppUTestGeneratedConfig.h \
+ generated/CppUTestGeneratedConfig.h include/CppUTest/StandardCLibrary.h \
+ C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include/stddef.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/stddef.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/crtdefs.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/corecrt.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_mac.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_secapi.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/vadefs.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/sdks/_mingw_directx.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/sdks/_mingw_ddk.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/stdlib.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/corecrt_wstdlib.h \
+ C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include-fixed/limits.h \
+ C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include-fixed/syslimits.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/limits.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/sec_api/stdlib_s.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/malloc.h \
+ C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include/stdarg.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/stdarg.h \
+ C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_stdarg.h \
+ include/CppUTest/MemoryLeakDetectorNewMacros.h \
+ include/CppUTest/TestHarness.h include/CppUTest/CppUTestConfig.h \
+ include/CppUTest/Utest.h include/CppUTest/SimpleString.h \
+ include/CppUTest/StandardCLibrary.h include/CppUTest/UtestMacros.h \
+ include/CppUTest/TestResult.h include/CppUTest/TestFailure.h \
+ include/CppUTest/TestPlugin.h include/CppUTest/MemoryLeakWarningPlugin.h \
+ include/CppUTest/MemoryLeakDetectorNewMacros.h \
+ include/CppUTest/MemoryLeakWarningPlugin.h \
+ include/CppUTest/MemoryLeakDetector.h \
+ include/CppUTest/TestMemoryAllocator.h \
+ include/CppUTest/PlatformSpecificFunctions.h \
+ include/CppUTest/TestOutput.h \
+ include/CppUTest/PlatformSpecificFunctions_c.h \
+ include/CppUTest/SimpleMutex.h
+
+include/CppUTest/MemoryLeakDetectorMallocMacros.h:
+
+include/CppUTest/CppUTestConfig.h:
+
+include/CppUTest/CppUTestGeneratedConfig.h:
+
+generated/CppUTestGeneratedConfig.h:
+
+include/CppUTest/StandardCLibrary.h:
+
+C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include/stddef.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/stddef.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/crtdefs.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/corecrt.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_mac.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_secapi.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/vadefs.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/sdks/_mingw_directx.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/sdks/_mingw_ddk.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/stdlib.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/corecrt_wstdlib.h:
+
+C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include-fixed/limits.h:
+
+C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include-fixed/syslimits.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/limits.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/sec_api/stdlib_s.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/malloc.h:
+
+C:/qp/qtools/mingw32/lib/gcc/i686-w64-mingw32/9.2.0/include/stdarg.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/stdarg.h:
+
+C:/qp/qtools/mingw32/i686-w64-mingw32/include/_mingw_stdarg.h:
+
+include/CppUTest/MemoryLeakDetectorNewMacros.h:
+
+include/CppUTest/TestHarness.h:
+
+include/CppUTest/CppUTestConfig.h:
+
+include/CppUTest/Utest.h:
+
+include/CppUTest/SimpleString.h:
+
+include/CppUTest/StandardCLibrary.h:
+
+include/CppUTest/UtestMacros.h:
+
+include/CppUTest/TestResult.h:
+
+include/CppUTest/TestFailure.h:
+
+include/CppUTest/TestPlugin.h:
+
+include/CppUTest/MemoryLeakWarningPlugin.h:
+
+include/CppUTest/MemoryLeakDetectorNewMacros.h:
+
+include/CppUTest/MemoryLeakWarningPlugin.h:
+
+include/CppUTest/MemoryLeakDetector.h:
+
+include/CppUTest/TestMemoryAllocator.h:
+
+include/CppUTest/PlatformSpecificFunctions.h:
+
+include/CppUTest/TestOutput.h:
+
+include/CppUTest/PlatformSpecificFunctions_c.h:
+
+include/CppUTest/SimpleMutex.h:

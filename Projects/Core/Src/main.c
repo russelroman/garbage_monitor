@@ -25,8 +25,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "ring_buffer.h"
+#include "at_common.h"
+#include "gsm.h"
+#include "gsm_task.h"
 
 
 /* USER CODE END Includes */
@@ -38,6 +42,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define DEBUG_P
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,6 +53,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim1;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -58,6 +67,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -67,13 +77,155 @@ static void MX_USART2_UART_Init(void);
 
 #define BUF_SIZE 1000U
 
-int _write(int file, char *ptr, int len)
-{
-	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
 
-	return len;
+volatile uint8_t rx_data_debug = 0;
+volatile uint8_t rx_data_modem = 0;
+
+ring_buf_t ring_buf_debug;
+ring_buf_t ring_buf_modem;
+uint8_t response_buffer[100];
+uint8_t out_buffer[100];
+
+typedef enum
+{
+	GSM_STATUS_OFF = 0,
+	GSM_STATUS_RUNNING = 1
+} gsm_module_status;
+
+void gsm_poweron()
+{
+	gsm_module_status status = GSM_STATUS_OFF;
+	// Wait for 100ms for VBAT to stabilize
+	HAL_Delay(100);
+
+	// 	Trigger PWRKey to active low for 2s if module is not running
+	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, SET);
+	HAL_Delay(2000);
+	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
+
+	//	Check is STATUS PIN is high to know if Module is running
+	do
+	{
+		status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
+	} while (status == GSM_STATUS_OFF);
 }
 
+void gsm_poweroff()
+{
+	gsm_module_status status = GSM_STATUS_OFF;
+	// Wait for 100ms for VBAT to stabilize
+	HAL_Delay(100);
+
+	//  Trigger PWRKey to active low for 1s if module is running
+	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, SET);
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
+
+	//  Wait for 12 seconds
+	HAL_Delay(12000);
+
+	//  Check is STATUS PIN is low to know if Module is not running
+	do
+	{
+		status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
+	} while (status == GSM_STATUS_RUNNING);
+}
+
+void gsm_restart()
+{
+	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
+
+	// Check if module is runnning or not
+	gsm_module_status status = GSM_STATUS_OFF;
+	status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
+
+	// If not running
+	if(status == GSM_STATUS_OFF)
+	{
+		gsm_poweron();
+
+		// We do not know if module was correctly shutdown previously
+		// so we need to power cycle again
+		gsm_poweroff();
+		gsm_poweron();
+	}
+	else
+	{
+		gsm_poweroff();
+		gsm_poweron();
+	}
+
+	ring_buf_init(&ring_buf_modem);
+}
+
+
+int get_distance(void)
+{
+	uint16_t timer_val = 0;
+	uint16_t echo_high = 0;
+	uint16_t echo_low = 0;
+	uint16_t distance = 0;
+
+	HAL_GPIO_WritePin(GPIOA, TRIG_Pin, RESET);
+	HAL_Delay(1);
+	HAL_TIM_Base_Start(&htim1);
+
+	HAL_GPIO_WritePin(GPIOA, TRIG_Pin, SET);
+	timer_val = __HAL_TIM_GET_COUNTER(&htim1);
+	while((__HAL_TIM_GET_COUNTER(&htim1) - timer_val) < 10);
+	HAL_GPIO_WritePin(GPIOA, TRIG_Pin, RESET);
+
+	while(!HAL_GPIO_ReadPin(GPIOA, ECHO_Pin));
+	echo_high = __HAL_TIM_GET_COUNTER(&htim1);
+
+	while(HAL_GPIO_ReadPin(GPIOA, ECHO_Pin));
+	echo_low = __HAL_TIM_GET_COUNTER(&htim1);
+
+	distance = (echo_low - echo_high)*(0.034) / 2;
+
+	return distance;
+}
+
+
+typedef struct
+{
+	uint8_t trash_level;
+} sensor_data_t;
+
+
+void gsm_tx_data(sensor_data_t sensor_data)
+{
+	char tx_command_buf[200];
+	memset(tx_command_buf, 0, sizeof(tx_command_buf));
+	char str_temp[10];
+
+	strcat(tx_command_buf, "field1=");
+	sprintf(str_temp, "%d", sensor_data.trash_level);
+	strcat(tx_command_buf, str_temp);
+	strcat(tx_command_buf, "&status=MQTTPUBLISH\x1A\r\n");
+	printf("%s\n", tx_command_buf);
+
+    gsm_restart();
+	HAL_Delay(5000);
+
+    gsm_check_modem();
+
+  sim_info_t sim_info;
+
+    gsm_check_sim(&sim_info);
+	gsm_check_network();
+	gsm_connect_gprs();
+	gsm_setup_tls();
+	gsm_mqtt_setup();
+
+	char command[] = "AT+QMTPUB=0,1,1,0,\"channels/2341795/publish\"\r\n";
+
+	int i = 0;
+	send_command(command);
+	HAL_Delay(500);
+
+	send_data_check_result_and_response(tx_command_buf, out_buffer, RESP_TYPE_HEADER,"+QMTPUB");
+}
 
 /* USER CODE END 0 */
 
@@ -107,6 +259,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -114,60 +267,26 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
- // printf("Hello\n");
-  //HAL_UART_Transmit(&huart2,"Russel\r\n", 8, HAL_MAX_DELAY);
-  char buf[200];
-  char buf2[200];
-
-  ring_buf_t ring_buf_debug;
-  ring_buf_t ring_buf_modem;
-
   ring_buf_init(&ring_buf_debug);
   ring_buf_init(&ring_buf_modem);
 
-#if 0
-  HAL_UART_Receive(&huart1, buf, 2, HAL_MAX_DELAY);
+  HAL_UART_Receive_IT(&huart1, &rx_data_debug, 1);
+  HAL_UART_Receive_IT(&huart2, &rx_data_modem, 1);
 
-  ring_buf_put(&ring_buf, buf[0]);
-  ring_buf_put(&ring_buf, buf[1]);
+  uint16_t distance = 0;
+  uint16_t bin_height = 122;	// 4ft
+  sensor_data_t sensor_data;
 
-  buf2[0] = ring_buf_get(&ring_buf);
-  buf2[1] = ring_buf_get(&ring_buf);
+  char test_buf[100];
 
-  HAL_UART_Transmit(&huart1, buf2, 2, HAL_MAX_DELAY);
-#endif
+  distance = get_distance();
+  sensor_data.trash_level = ((float)distance / bin_height) * 100;
 
-  uint32_t cntr = 0;
+  gsm_tx_data(sensor_data);
+
 
   while (1)
   {
-
-	  cntr = 0;
-	  // read incoming data
-	  HAL_UART_Receive(&huart1, &buf[cntr], 1, HAL_MAX_DELAY);
-	  // while data is not carriage return
-	  // 	store data
-	  // 	read incoming data
-	  while(buf[cntr] != '\r')
-	  {
-		  ++cntr;
-		  HAL_UART_Receive(&huart1, &buf[cntr], 1, HAL_MAX_DELAY);
-	  }
-
-
-	  HAL_UART_Transmit(&huart2, buf, cntr + 1, HAL_MAX_DELAY);
-
-	  cntr = 0;
-
-	  while(1)
-	  {
-		  HAL_UART_Receive(&huart2, &buf2[cntr], 1, HAL_MAX_DELAY);
-		  HAL_UART_Transmit(&huart1, &buf2[cntr], 1, HAL_MAX_DELAY);
-		  ++cntr;
-	  }
-
-
-
 
     /* USER CODE END WHILE */
 
@@ -213,6 +332,52 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 71;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65535;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+
 }
 
 /**
@@ -294,16 +459,49 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LED_Pin */
-  GPIO_InitStruct.Pin = LED_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(TRIG_GPIO_Port, TRIG_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(PWRKEY_GPIO_Port, PWRKEY_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ECHO_Pin */
+  GPIO_InitStruct.Pin = ECHO_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ECHO_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : TRIG_Pin */
+  GPIO_InitStruct.Pin = TRIG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TRIG_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : STATUS_Pin */
+  GPIO_InitStruct.Pin = STATUS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(STATUS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PWRKEY_Pin */
+  GPIO_InitStruct.Pin = PWRKEY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(PWRKEY_GPIO_Port, &GPIO_InitStruct);
 
 }
 

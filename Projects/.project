@@ -31,9 +31,39 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>Core/Inc/at_common.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/at/at_common.h</locationURI>
+		</link>
+		<link>
+			<name>Core/Inc/gsm.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm.h</locationURI>
+		</link>
+		<link>
+			<name>Core/Inc/gsm_task.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm_task.h</locationURI>
+		</link>
+		<link>
 			<name>Core/Inc/ring_buffer.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Application/ring_buffer/ring_buffer.h</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/at_common.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/at/at_common.c</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/gsm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm.c</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/gsm_task.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm_task.c</locationURI>
 		</link>
 		<link>
 			<name>Core/Src/ring_buffer.c</name>

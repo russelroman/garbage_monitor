@@ -2,6 +2,7 @@
 #define RING_BUFFER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define BUF_SIZE 1000U
 
