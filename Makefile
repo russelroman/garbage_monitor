@@ -48,9 +48,6 @@ MAX_SIZE:= 131702
 # Default C compilation flags. We use += to allow the user to specify others on the command line
 CFLAGS += -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB
 CFLAGS += -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage --specs=nano.specs -mfloat-abi=soft -mthumb
-# The -MD $*.d argument below tells the assemble to create the proper dep file
-# so that our dependency rules work correctly
-ASFLAGS = -mcpu=cortex-m3 -g3 -DDEBUG -c -x assembler-with-cpp --specs=nano.specs -mfloat-abi=soft -mthumb
 
 PRJ_DIR = projects
 
@@ -58,8 +55,6 @@ LINKER_FILE = $(PRJ_DIR)/STM32F103C8TX_FLASH.ld
 # Default C linker flags. We use += to allow the user to specify others on the command line
 LDFLAGS += -mcpu=cortex-m3 -T"$(LINKER_FILE)" -Wl,-Map="$(BUILDRESULTS)/$(TARGET).map" -Wl,--gc-sections -static -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 
-
-STATIC_LIB_FLAGS := rcs
 DEPFLAGS = -MT $@ -MMD -MP -MF $*.d
 
 # By default, this Makefile produces release builds
@@ -87,9 +82,6 @@ APP_SOURCES += $(STARTUP_DIR)/startup_stm32f103c8tx.s
 APP_SOURCES += $(wildcard $(PRJ_SRC_DIR)/Src/*.c)
 APP_SOURCES += $(wildcard $(HAL_DIR)/Src/*.c)
 
-DRIVER_LIB_SOURCES = 
-
-BSP_LIB_SOURCES = 
 
 # Include directory arguments
 # Normally, we would separate these for each library and executable target,
@@ -102,12 +94,6 @@ INCLUDES += -I$(HAL_DIR)/Inc
 INCLUDES += -I$(PRJ_DRIVERS_DIR)/CMSIS/Device/ST/STM32F1XX/Include
 INCLUDES += -I$(PRJ_DRIVERS_DIR)/CMSIS/Include
 
-# The output location where libraries should be placed
-LIBDIR:=$(BUILDRESULTS)/lib
-
-# Translate the library sources into object file namesthat can be used as prerequisites
-DRIVER_LIB_OBJECTS := $(DRIVER_LIB_SOURCES:%.c=$(BUILDRESULTS)/%.o)
-BSP_LIB_OBJECTS := $(BSP_LIB_SOURCES:%.c=$(BUILDRESULTS)/%.o)
 # Translate the application sources into object file names that can be used as prerequisites
 APP_OBJECTS := $(APP_SOURCES:%.c=$(BUILDRESULTS)/%.o)
 # We also need to get that pesky .s file
@@ -156,7 +142,7 @@ clean:
 
 # Rule to create a mirror of the source tree in the build output folder,
 # where object files for APP_SOURCES will be kept
-$(patsubst %/,%,$(addprefix $(BUILDRESULTS)/,$(sort $(dir $(APP_SOURCES) $(DRIVER_LIB_SOURCES) $(BSP_LIB_SOURCES))))):
+$(patsubst %/,%,$(addprefix $(BUILDRESULTS)/,$(sort $(dir $(APP_SOURCES))))):
 	$(Q)mkdir -p $@
 
 # Create the build output folder
@@ -180,5 +166,8 @@ help:
 	@echo "\nTo compile the software, run `make`"
 	@echo "Options:"
 	@echo "	DEBUG=1 (default) generates a debug build, set to 0 to generate a release builds"
+	@echo "	BUILDRESULTS=build (default) sets build folder, set to desired build folder name"
+	@echo "	VERBOSE=0 (default) controls the display of commands, set to 1 to display the commands"
 	@echo "Other targets:"
 	@echo "	- clean: removes all generated build results"
+	@echo "	- flash: uploads the binary to the target microcontroller"
