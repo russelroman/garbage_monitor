@@ -27,9 +27,6 @@ int send_command(char * command)
 }
 
 
-
-
-
 /**
  * @brief
  *     Will search until the type of response was found and
