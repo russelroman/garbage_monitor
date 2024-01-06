@@ -12,3 +12,12 @@ There are two ways to build the project:
 2. Build the project using STM32Cube IDE
 
 ### Build the project using custom Makefile
+
+make all - will build the binary of the project
+make flash - will flash the binary to STM32 target device
+make clean - will delete the build artifacts
+
+### Build the project using STM32Cube IDE
+
+1. Open the stm32 project file located in Projects folder
+2. Build using stm32cube ide
