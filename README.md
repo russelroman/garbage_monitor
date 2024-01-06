@@ -13,9 +13,9 @@ There are two ways to build the project:
 
 ### Build the project using custom Makefile
 
-*make all - will build the binary of the project\n
-*make flash - will flash the binary to STM32 target device\n
-*make clean - will delete the build artifacts\n
+make all - will build the binary of the project<br>
+make flash - will flash the binary to STM32 target device<br>
+make clean - will delete the build artifacts<br>
 
 ### Build the project using STM32Cube IDE
 
