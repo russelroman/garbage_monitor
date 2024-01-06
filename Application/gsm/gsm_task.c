@@ -88,8 +88,10 @@ int gsm_check_sim(sim_info_t * sim_info)
 
 int gsm_check_network()
 {
+	int result;
+
 	// Get Signal Strength
-	send_command_check_result_and_response("AT+CSQ\r\n", out_buffer, RESP_TYPE_HEADER);
+	result = send_command_check_result_and_response("AT+CSQ\r\n", out_buffer, RESP_TYPE_HEADER);
 
 	// Check if connected to network
 	char *ptr;
@@ -97,46 +99,55 @@ int gsm_check_network()
 
 	do
 	{
-		send_command_check_result_and_response("AT+CREG?\r\n", out_buffer, RESP_TYPE_HEADER);
-
-
+		result = send_command_check_result_and_response("AT+CREG?\r\n", out_buffer, RESP_TYPE_HEADER);
 		ptr = strchr(out_buffer, ',');
 		++ptr;
 		val = *ptr;
 	} while(val != '1');
 
 	// Check if which network
-	send_command_check_result_and_response("AT+COPS?\r\n", out_buffer, RESP_TYPE_HEADER);
+	result = send_command_check_result_and_response("AT+COPS?\r\n", out_buffer, RESP_TYPE_HEADER);
 
-
-
+	return result;
 }
 
 
 int gsm_connect_gprs()
 {
-	send_command_check_result_and_response("AT+QIFGCNT=0\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QICSGP=1,\"http.globe.com.ph\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QIREGAPP\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QIACT\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_response("AT+QILOCIP\r\n", out_buffer);
+	int result;
+
+	result = send_command_check_result_and_response("AT+QIFGCNT=0\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QICSGP=1,\"http.globe.com.ph\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QIREGAPP\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QIACT\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_response("AT+QILOCIP\r\n", out_buffer);
+
+	return result;
 }
 
 int gsm_setup_tls()
 {
-	send_command_check_result_and_response("AT+QMTCFG=\"SSL\",0,1,2\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_response("AT+QSECWRITE=\"RAM:cacert.pem\",3064,100\r\n", out_buffer);
-	send_command_check_response(ca_cert, out_buffer);
-	send_command_check_result_and_response("AT+QSSLCFG=\"cacert\",2,\"RAM:cacert.pem\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QSSLCFG=\"seclevel\",2,1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QSSLCFG=\"ciphersuite\",2,\"0xFFFF\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QSSLCFG=\"ignorertctime\",1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	int result;
+
+	result = send_command_check_result_and_response("AT+QMTCFG=\"SSL\",0,1,2\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_response("AT+QSECWRITE=\"RAM:cacert.pem\",3064,100\r\n", out_buffer);
+	result = send_command_check_response((char *)ca_cert, out_buffer);
+	result = send_command_check_result_and_response("AT+QSSLCFG=\"cacert\",2,\"RAM:cacert.pem\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QSSLCFG=\"seclevel\",2,1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QSSLCFG=\"ciphersuite\",2,\"0xFFFF\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QSSLCFG=\"ignorertctime\",1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+
+	return result;
 }
 
 int gsm_mqtt_setup()
 {
-	send_command_check_result_and_response("AT+QMTCFG=\"KEEPALIVE\",2,60\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QMTCFG=\"VERSION\",2,1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
-	send_command_check_result_and_response("AT+QMTOPEN=0,\"mqtt3.thingspeak.com\",8883\r\n", out_buffer, RESP_TYPE_HEADER);
-	send_command_check_result_and_response("AT+QMTCONN=0,\"JBU4DxUHGSA6DAsUFDwZMjA\",\"JBU4DxUHGSA6DAsUFDwZMjA\",\"UsPR69tE0YJcB+PiCaCbVimx\"\r\n", out_buffer, RESP_TYPE_HEADER);
+	int result;
+
+	result = send_command_check_result_and_response("AT+QMTCFG=\"KEEPALIVE\",2,60\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QMTCFG=\"VERSION\",2,1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
+	result = send_command_check_result_and_response("AT+QMTOPEN=0,\"mqtt3.thingspeak.com\",8883\r\n", out_buffer, RESP_TYPE_HEADER);
+	result = send_command_check_result_and_response("AT+QMTCONN=0,\"JBU4DxUHGSA6DAsUFDwZMjA\",\"JBU4DxUHGSA6DAsUFDwZMjA\",\"UsPR69tE0YJcB+PiCaCbVimx\"\r\n", out_buffer, RESP_TYPE_HEADER);
+
+	return result;
 }

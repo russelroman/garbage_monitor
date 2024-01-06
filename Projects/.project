@@ -41,6 +41,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm.h</locationURI>
 		</link>
 		<link>
+			<name>Core/Inc/gsm_power.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/application/gsm/gsm_power.h</locationURI>
+		</link>
+		<link>
 			<name>Core/Inc/gsm_task.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm_task.h</locationURI>
@@ -59,6 +64,11 @@
 			<name>Core/Src/gsm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Application/gsm/gsm.c</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/gsm_power.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/application/gsm/gsm_power.c</locationURI>
 		</link>
 		<link>
 			<name>Core/Src/gsm_task.c</name>

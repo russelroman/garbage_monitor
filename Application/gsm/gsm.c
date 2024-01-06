@@ -1,9 +1,13 @@
 #include "main.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "ring_buffer.h"
+#include <stdio.h>
+#include <string.h>
 
+#include "ring_buffer.h"
 #include "gsm.h"
+#include "at_common.h"
+
 
 #define DEBUG_P
 
@@ -24,10 +28,9 @@ int send_command(char * command)
 		res_uart = HAL_UART_Transmit(&huart2, &command[i], 1, HAL_MAX_DELAY);
 		++i;
 	}
+
+	return res_uart;
 }
-
-
-
 
 
 /**
@@ -54,7 +57,6 @@ int send_command(char * command)
 
 int send_data_check_result_and_response(char * command, char * out_buf, resp_type_t type, char * header)
 {
-	bool is_finished_getting_line = false;
 	resp_type_t line_type = MAX_RESP_TYPE;
 	int result = 0;
 
@@ -95,7 +97,6 @@ int send_data_check_result_and_response(char * command, char * out_buf, resp_typ
 
 			if(is_finished_getting_line)
 			{
-				int i = 0;
 
 			  	line_type = get_resp_type(response_buffer, header);
 
@@ -145,11 +146,15 @@ int send_data_check_result_and_response(char * command, char * out_buf, resp_typ
 
 int send_command_check_result_and_response(char * command, char * out_buf, resp_type_t type)
 {
+	int result;
+
 	char header[100];
 
 	gsm_get_command_header(command, header);
 
-	send_data_check_result_and_response(command, out_buf, type, header);
+	result = send_data_check_result_and_response(command, out_buf, type, header);
+
+	return result;
 }
 
 
@@ -162,10 +167,6 @@ int send_command_check_response(char * command, char * out_buf)
 	bool is_finished_getting_line = false;
 	bool is_result_error = false;
 	bool is_command_successful = false;
-
-	int result = 0;
-
-	int i = 0;
 
 	HAL_Delay(500);	 // Wait to check for URC
 
@@ -251,7 +252,6 @@ void gsm_remove_response_header(char * response, char *out)
 	bool is_header_found = false;
 	int state = START;
 	int i = 0;
-	int j = 0;
 
 	while(is_header_found == false)
 	{

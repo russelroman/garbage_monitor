@@ -31,6 +31,7 @@
 #include "at_common.h"
 #include "gsm.h"
 #include "gsm_task.h"
+#include "gsm_power.h"
 
 
 /* USER CODE END Includes */
@@ -83,80 +84,8 @@ volatile uint8_t rx_data_modem = 0;
 
 ring_buf_t ring_buf_debug;
 ring_buf_t ring_buf_modem;
-uint8_t response_buffer[100];
-uint8_t out_buffer[100];
-
-typedef enum
-{
-	GSM_STATUS_OFF = 0,
-	GSM_STATUS_RUNNING = 1
-} gsm_module_status;
-
-void gsm_poweron()
-{
-	gsm_module_status status = GSM_STATUS_OFF;
-	// Wait for 100ms for VBAT to stabilize
-	HAL_Delay(100);
-
-	// 	Trigger PWRKey to active low for 2s if module is not running
-	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, SET);
-	HAL_Delay(2000);
-	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
-
-	//	Check is STATUS PIN is high to know if Module is running
-	do
-	{
-		status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
-	} while (status == GSM_STATUS_OFF);
-}
-
-void gsm_poweroff()
-{
-	gsm_module_status status = GSM_STATUS_OFF;
-	// Wait for 100ms for VBAT to stabilize
-	HAL_Delay(100);
-
-	//  Trigger PWRKey to active low for 1s if module is running
-	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, SET);
-	HAL_Delay(1000);
-	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
-
-	//  Wait for 12 seconds
-	HAL_Delay(12000);
-
-	//  Check is STATUS PIN is low to know if Module is not running
-	do
-	{
-		status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
-	} while (status == GSM_STATUS_RUNNING);
-}
-
-void gsm_restart()
-{
-	HAL_GPIO_WritePin(GPIOB, PWRKEY_Pin, RESET);
-
-	// Check if module is runnning or not
-	gsm_module_status status = GSM_STATUS_OFF;
-	status = HAL_GPIO_ReadPin(GPIOB, STATUS_Pin);
-
-	// If not running
-	if(status == GSM_STATUS_OFF)
-	{
-		gsm_poweron();
-
-		// We do not know if module was correctly shutdown previously
-		// so we need to power cycle again
-		gsm_poweroff();
-		gsm_poweron();
-	}
-	else
-	{
-		gsm_poweroff();
-		gsm_poweron();
-	}
-
-	ring_buf_init(&ring_buf_modem);
-}
+char response_buffer[100];
+char out_buffer[100];
 
 
 int get_distance(void)
@@ -205,14 +134,12 @@ void gsm_tx_data(sensor_data_t sensor_data)
 	strcat(tx_command_buf, "&status=MQTTPUBLISH\x1A\r\n");
 	printf("%s\n", tx_command_buf);
 
-    gsm_restart();
-	HAL_Delay(5000);
-
-    gsm_check_modem();
-
   sim_info_t sim_info;
 
-    gsm_check_sim(&sim_info);
+  	  gsm_restart();
+	HAL_Delay(5000);
+	gsm_check_modem();
+	gsm_check_sim(&sim_info);
 	gsm_check_network();
 	gsm_connect_gprs();
 	gsm_setup_tls();
@@ -220,7 +147,6 @@ void gsm_tx_data(sensor_data_t sensor_data)
 
 	char command[] = "AT+QMTPUB=0,1,1,0,\"channels/2341795/publish\"\r\n";
 
-	int i = 0;
 	send_command(command);
 	HAL_Delay(500);
 
@@ -276,8 +202,6 @@ int main(void)
   uint16_t distance = 0;
   uint16_t bin_height = 122;	// 4ft
   sensor_data_t sensor_data;
-
-  char test_buf[100];
 
   distance = get_distance();
   sensor_data.trash_level = ((float)distance / bin_height) * 100;
