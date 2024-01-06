@@ -1,7 +1,8 @@
 # Garbage Monitor
 
 Garbage Monitor will get the current fill level of the garbage bin and will transmit the
-fill level percentage to Thingspeak
+fill level percentage to Thingspeak. The device will notify the user if the fill level
+reaches to a certain level.
 
 The project uses stm32 and M95 GSM module to transmit data to Thingspeak
 
