@@ -21,3 +21,7 @@ make clean - will delete the build artifacts<br>
 
 1. Open the stm32 project file located in Projects folder
 2. Build using stm32cube ide
+
+## Build the tests
+
+make -f MakeFile_test.mk
