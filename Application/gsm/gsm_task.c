@@ -131,7 +131,7 @@ int gsm_setup_tls()
 
 	result = send_command_check_result_and_response("AT+QMTCFG=\"SSL\",0,1,2\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
 	result = send_command_check_response("AT+QSECWRITE=\"RAM:cacert.pem\",3064,100\r\n", out_buffer);
-	result = send_command_check_response(ca_cert, out_buffer);
+	result = send_command_check_response((char *)ca_cert, out_buffer);
 	result = send_command_check_result_and_response("AT+QSSLCFG=\"cacert\",2,\"RAM:cacert.pem\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
 	result = send_command_check_result_and_response("AT+QSSLCFG=\"seclevel\",2,1\r\n", out_buffer, RESP_TYPE_RESULT_CODE);
 	result = send_command_check_result_and_response("AT+QSSLCFG=\"ciphersuite\",2,\"0xFFFF\"\r\n", out_buffer, RESP_TYPE_RESULT_CODE);

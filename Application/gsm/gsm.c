@@ -57,7 +57,6 @@ int send_command(char * command)
 
 int send_data_check_result_and_response(char * command, char * out_buf, resp_type_t type, char * header)
 {
-	bool is_finished_getting_line = false;
 	resp_type_t line_type = MAX_RESP_TYPE;
 	int result = 0;
 

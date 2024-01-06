@@ -84,8 +84,8 @@ volatile uint8_t rx_data_modem = 0;
 
 ring_buf_t ring_buf_debug;
 ring_buf_t ring_buf_modem;
-uint8_t response_buffer[100];
-uint8_t out_buffer[100];
+char response_buffer[100];
+char out_buffer[100];
 
 
 int get_distance(void)
@@ -147,7 +147,6 @@ void gsm_tx_data(sensor_data_t sensor_data)
 
 	char command[] = "AT+QMTPUB=0,1,1,0,\"channels/2341795/publish\"\r\n";
 
-	int i = 0;
 	send_command(command);
 	HAL_Delay(500);
 
@@ -203,8 +202,6 @@ int main(void)
   uint16_t distance = 0;
   uint16_t bin_height = 122;	// 4ft
   sensor_data_t sensor_data;
-
-  char test_buf[100];
 
   distance = get_distance();
   sensor_data.trash_level = ((float)distance / bin_height) * 100;
