@@ -134,14 +134,12 @@ void gsm_tx_data(sensor_data_t sensor_data)
 	strcat(tx_command_buf, "&status=MQTTPUBLISH\x1A\r\n");
 	printf("%s\n", tx_command_buf);
 
-    gsm_restart();
-	HAL_Delay(5000);
-
-    gsm_check_modem();
-
   sim_info_t sim_info;
 
-    gsm_check_sim(&sim_info);
+  	  gsm_restart();
+	HAL_Delay(5000);
+	gsm_check_modem();
+	gsm_check_sim(&sim_info);
 	gsm_check_network();
 	gsm_connect_gprs();
 	gsm_setup_tls();
